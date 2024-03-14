@@ -1,0 +1,4 @@
+prepare:
+  how: cmake
+execute:
+  how: tmt
