@@ -1,0 +1,125 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tmt-cmake"
+dynamic = ["version"]
+description = "CMake plugin for tmt"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+license-files = { paths = ["LICENSE.md"] }
+requires-python = ">=3.9"
+authors = [
+    { name = "Cristian Le", email = "git@lecris.dev" },
+    ]
+keywords = [
+    "metadata",
+    "testing",
+    ]
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Utilities",
+    "Topic :: Software Development :: Testing",
+    "Operating System :: POSIX :: Linux",
+    "Development Status :: 1 - Planning",
+    ]
+dependencies = [
+    "tmt",
+    ]
+
+[project.optional-dependencies]
+docs = [
+    "sphinx",
+    "furo",
+    "myst-parser",
+    ]
+
+[project.scripts]
+tmt = "tmt.__main__:run_cli"
+
+[project.urls]
+Homepage = "https://github.com/LecrisUT/tmt-cmake"
+Repository = "https://github.com/LecrisUT/tmt-cmake"
+Documentation = "https://tmt-cmake.readthedocs.io"
+Issues = "https://github.com/LecrisUT/tmt-cmake/issues"
+
+[tool.hatch]
+version.source = "vcs"
+build.hooks.vcs.version-file = "src/tmt_cmake/_version.py"
+
+[tool.mypy]
+files = ["src", "test"]
+mypy_path = ["$MYPY_CONFIG_FILE_DIR/src"]
+python_version = "3.12"
+warn_unused_configs = true
+show_error_codes = true
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+strict = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+
+[[tool.mypy.overrides]]
+module = ["tmt_cmake.*"]
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+[tool.ruff]
+select = [
+    "F",           # pyflakes
+    "W",           # pycodestyle-warnings
+    "E",           # pycodestyle-errors
+    "I",           # isort
+    "N",           # pep8-naming
+    "D",           # pydocstyle
+    "UP",          # pyupgrade
+    "YTT",         # flake8-2020
+    "ANN",         # flake8-annotations
+    "S",           # flake8-banditF
+    "FBT",         # flake8-boolean-trap
+    "B",           # flake8-bugbear
+    "A",           # flake8-builtins
+    "COM",         # flake8-comma
+    "C4",          # flake8-comprehensions
+    "EM",          # flake8-errmsg
+    "FA",          # flake8-future-annotations
+    "ISC",         # flake8-implicit-str-concat
+    "ICN",         # flake8-import-conventions
+    "G",           # flake8-logging-format
+    "PIE",         # flake8-pie
+    "T20",         # flake8-print
+    "PYI",         # flake8-pyi
+    "PT",          # flake8-pytest-style
+    "Q",           # flake8-quotes
+    "RSE",         # flake8-raise
+    "RET",         # flake8-return
+    "SLF",         # flake8-self
+    "SIM",         # flake8-simplify
+    "TID",         # flake8-tidy-imports
+    "TCH",         # flake8-type-checking
+    "ARG",         # flake8-unused-arguments
+    "PTH",         # flake8-use-pathlib
+    "TD",          # flake8-todos
+    "ERA",         # eradicate
+    "PGH",         # pygrep-hooks
+    "PL",          # pylint
+    "TRY",         # tryceratops
+    "FLY",         # flynt
+    "PERF",        # perflint
+    "FURB",        # refurb
+    "RUF",         # Ruff-specific
+    ]
+ignore = [
+    "ANN101",  # Missing type annotation for `self` in method
+    "ANN102",  # Missing type annotation for `cls` in classmethod
+    "D203",    # 1 blank line required before class docstring
+    "D212",    # Multi-line docstring summary should start at the first line
+    "S101",    # Use of assert detected
+    "TD002",   # Missing author in TODO
+    "TD003",   # Missing issue link on the line following this TODO
+    ]
