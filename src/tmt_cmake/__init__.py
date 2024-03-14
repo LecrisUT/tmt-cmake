@@ -1,0 +1,1 @@
+"""TMT CMake plugin."""
