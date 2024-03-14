@@ -136,3 +136,6 @@ ignore = [
     "TD002",   # Missing author in TODO
     "TD003",   # Missing issue link on the line following this TODO
     ]
+
+[tool.ruff.lint.per-file-ignores]
+"test/**" = ["D", "ANN"]
