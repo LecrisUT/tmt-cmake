@@ -34,10 +34,23 @@ dependencies = [
     ]
 
 [project.optional-dependencies]
+test = [
+    "pytest",
+]
+test-cov = [
+    "tmt-cmake[test]",
+    "pytest-cov",
+]
 docs = [
     "sphinx",
     "furo",
+    "sphinx-design",
+    "sphinx-togglebutton",
     "myst-parser",
+    "breathe",
+    "sphinx-tippy",
+    "sphinx-copybutton",
+    "sphinx-prompt",
     ]
 
 [project.scripts]
@@ -69,7 +82,7 @@ module = ["tmt_cmake.*"]
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 
-[tool.ruff]
+[tool.ruff.lint]
 select = [
     "F",           # pyflakes
     "W",           # pycodestyle-warnings
@@ -123,3 +136,6 @@ ignore = [
     "TD002",   # Missing author in TODO
     "TD003",   # Missing issue link on the line following this TODO
     ]
+
+[tool.ruff.lint.per-file-ignores]
+"test/**" = ["D", "ANN"]

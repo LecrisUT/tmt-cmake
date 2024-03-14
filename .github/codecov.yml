@@ -1,0 +1,6 @@
+codecov:
+  notify:
+    wait_for_ci: true
+ignore:
+  - "example"
+  - "test"

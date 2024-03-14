@@ -1,0 +1,16 @@
+{
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"packageRules": [
+		{
+			"groupName": "CI and devDependencies",
+			"matchManagers": ["github-actions", "pre-commit"]
+		}
+	],
+	"separateMajorMinor": false,
+	"extends": [
+		"config:recommended",
+		"schedule:weekly",
+		":enablePreCommit",
+		":semanticCommitTypeAll(chore)"
+	]
+}

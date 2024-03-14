@@ -1,0 +1,40 @@
+on:
+  workflow_call:
+    inputs:
+      mask-experimental:
+        type: boolean
+        default: true
+        description: Always report experimental test as successful
+    secrets:
+      CODECOV_TOKEN:
+        description: Codecov token of the main repository
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: >
+      🐍 ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental || false }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install package
+        run: pip install -e .[test-cov]
+      - name: Test package
+        run: pytest --cov --cov-report=xml
+        continue-on-error: ${{ matrix.experimental && inputs.mask-experimental}}
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          name: python-${{ matrix.python-version }}
