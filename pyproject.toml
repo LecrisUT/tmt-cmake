@@ -44,7 +44,13 @@ test-cov = [
 docs = [
     "sphinx",
     "furo",
+    "sphinx-design",
+    "sphinx-togglebutton",
     "myst-parser",
+    "breathe",
+    "sphinx-tippy",
+    "sphinx-copybutton",
+    "sphinx-prompt",
     ]
 
 [project.scripts]

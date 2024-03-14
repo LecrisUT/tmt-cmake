@@ -1,0 +1,11 @@
+version: 2
+
+python:
+  install:
+    - path: .
+      extra_requirements:
+        - docs
+build:
+  os: ubuntu-lts-latest
+  tools:
+    python: "3"
