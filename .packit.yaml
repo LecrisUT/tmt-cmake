@@ -31,21 +31,28 @@ upstream_tag_template: v{version}
 jobs:
   - &copr
     job: copr_build
-    trigger: commit
-    branch: main
+    trigger: release
     owner: lecris
-    project: nightly
+    project: release
     targets:
       - fedora-all-x86_64
       - fedora-all-aarch64
   - &tests
     job: tests
-    trigger: commit
-    branch: main
+    trigger: release
     targets:
       - fedora-all-x86_64
       - fedora-all-aarch64
     fmf_path: .distro
+  - <<: *copr
+    trigger: commit
+    project: nightly
+    branch: main
+    additional_repos:
+      - copr://@scikit-build/release
+  - <<: *tests
+    trigger: commit
+    branch: main
   - <<: *copr
     trigger: pull_request
     project: tmt-cmake
@@ -53,11 +60,6 @@ jobs:
     release_suffix: "{PACKIT_RPMSPEC_RELEASE}"
   - <<: *tests
     trigger: pull_request
-  - <<: *copr
-    trigger: release
-    project: release
-  - <<: *tests
-    trigger: release
   - job: propose_downstream
     trigger: release
     dist_git_branches:
