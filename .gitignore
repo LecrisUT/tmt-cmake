@@ -162,3 +162,8 @@ cython_debug/
 
 ### Project specifi
 src/tmt_cmake/_version.py
+
+# RPM spec file
+!/.distro/*.spec
+*.tar.gz
+*.rpm
