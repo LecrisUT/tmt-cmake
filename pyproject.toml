@@ -53,9 +53,6 @@ docs = [
     "sphinx-prompt",
     ]
 
-[project.scripts]
-tmt = "tmt.__main__:run_cli"
-
 [project.urls]
 Homepage = "https://github.com/LecrisUT/tmt-cmake"
 Repository = "https://github.com/LecrisUT/tmt-cmake"
