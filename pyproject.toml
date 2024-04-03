@@ -54,6 +54,7 @@ docs = [
     ]
 
 [project.entry-points."tmt.plugin"]
+PrepareCMake = "tmt_cmake.prepare:PrepareCMake"
 
 [project.urls]
 Homepage = "https://github.com/LecrisUT/tmt-cmake"
