@@ -1,0 +1,62 @@
+# Minimal examples
+/good:
+  summary: "Minimal example that works "
+  /prepare:
+    summary+: (prepare)
+    prepare:
+      how: cmake
+    execute:
+      # Dummy execute step
+      script: /bin/true
+  /discover:
+    summary+: (discover)
+    prepare:
+      how: cmake
+    discover:
+      how: cmake
+    execute:
+      how: tmt
+# TODO: Checks for CMake test framework
+# Full specifications
+/full:
+  summary: "Full specification example "
+  /prepare:
+    summary+: (prepare)
+    prepare:
+      # Should not be affected by other prepare steps
+      - how: shell
+        script: /bin/true
+      # TODO: Add specification from PrepareCMakeData
+      - how: cmake
+    execute:
+      script: /bin/true
+  /discover:
+    summary+: (discover)
+    prepare:
+      how: cmake
+    discover:
+      # Can provide other discover steps
+      - how: shell
+        tests:
+          - name: /dummy
+            test: /bin/true
+      # TODO: Add specification from DiscoverCMakeData
+      - how: cmake
+    execute:
+      how: tmt
+# Failing cases
+/fail:
+  summary: "Failing case: "
+  /multiple-prepare:
+    summary+: multiple CMake prepare steps are present
+    prepare:
+      - how: cmake
+      - how: cmake
+    execute:
+      script: /bin/true
+  /discover-no-prepare:
+    summary+: CMake discover is used without a CMake prepare step
+    discover:
+      how: cmake
+    execute:
+      how: tmt

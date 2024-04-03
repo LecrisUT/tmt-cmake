@@ -31,6 +31,31 @@ class PrepareCMake(PreparePlugin[PrepareCMakeData]):
 
     _data_class = PrepareCMakeData
 
+    def _check(self) -> bool:
+        """Check that the prepare step is well configured."""
+        successful = True
+        # Check that there is no other prepare step of type CMake
+        # TODO: tmt does not have a cleaner way to check the plugin type
+        cmake_data = [
+            data
+            for data in self.step.plan.prepare.data
+            if isinstance(data, PrepareCMakeData)
+        ]
+        if len(cmake_data) > 1:
+            self.fail("More than one CMake prepare step was specified")
+            successful = False
+        return successful
+
+    def show(self, keys: list[str] | None = None) -> None:  # noqa: D102
+        super().show(keys)
+        self._check()
+
+    def wake(self) -> None:  # noqa: D102
+        super().wake()
+        if not self._check():
+            msg = f"Plan {self.step.plan} is not a valid CMake plan"
+            raise tmt.utils.GeneralError(msg)
+
     def go(  # noqa: D102
         self,
         *,
