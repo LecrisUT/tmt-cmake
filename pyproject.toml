@@ -53,6 +53,8 @@ docs = [
     "sphinx-prompt",
     ]
 
+[project.entry-points."tmt.plugin"]
+
 [project.urls]
 Homepage = "https://github.com/LecrisUT/tmt-cmake"
 Repository = "https://github.com/LecrisUT/tmt-cmake"
@@ -132,6 +134,8 @@ ignore = [
     "S101",    # Use of assert detected
     "TD002",   # Missing author in TODO
     "TD003",   # Missing issue link on the line following this TODO
+    "RUF009",  # Do not perform function call `field` in dataclass defaults
+               # Adding this because we are using tmt's field
     ]
 
 [tool.ruff.lint.per-file-ignores]

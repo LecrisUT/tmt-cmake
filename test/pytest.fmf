@@ -1,3 +1,6 @@
+/:
+  inherit: false
+
 tag: [ pytest ]
 require:
   - python3-pytest
