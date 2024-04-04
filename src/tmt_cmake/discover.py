@@ -11,6 +11,7 @@ import dataclasses
 import tmt
 import tmt.utils
 from tmt.steps.discover import DiscoverPlugin, DiscoverStepData
+from tmt.utils import field
 
 import tmt_cmake.prepare
 
@@ -21,7 +22,36 @@ __all__ = [
 
 @dataclasses.dataclass
 class DiscoverCMakeData(DiscoverStepData):
-    pass
+    @property
+    def is_bare(self) -> bool:
+        # Workaround for https://github.com/teemtee/tmt/issues/2827
+        return False
+
+    # CTest filters
+    tests_include: str | None = field(
+        option=("-R", "--tests-regex"),
+        default=None,
+        metavar="regex",
+        help="Regex for tests to include",
+    )
+    tests_exclude: str | None = field(
+        option=("-E", "--exclude-regex"),
+        default=None,
+        metavar="regex",
+        help="Regex for tests to exclude",
+    )
+    labels_include: str | None = field(
+        option=("-L", "--label-regex"),
+        default=None,
+        metavar="regex",
+        help="Regex for test labels to include",
+    )
+    labels_exclude: str | None = field(
+        option=("-LE", "--label-exclude"),
+        default=None,
+        metavar="regex",
+        help="Regex for test labels to exclude",
+    )
 
 
 @tmt.steps.provides_method("cmake")
