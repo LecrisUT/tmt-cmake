@@ -26,8 +26,15 @@
       # Should not be affected by other prepare steps
       - how: shell
         script: /bin/true
-      # TODO: Add specification from PrepareCMakeData
       - how: cmake
+        source_dir: other-source
+        build_dir: other-build
+        preset: some-preset
+        cmake_exe: other-cmake
+        no_build: true
+        install_prefix: some-install-path
+        defines:
+          some_cache: value
     execute:
       script: /bin/true
   /discover:

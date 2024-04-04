@@ -1,0 +1,8 @@
+/default:
+  prepare:
+    how: cmake
+    # Need to set at least one value otherwise it would not run
+    # https://github.com/teemtee/tmt/issues/2827
+    build_dir: build
+  execute:
+    script: /bin/true

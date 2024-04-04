@@ -10,6 +10,9 @@ import dataclasses
 
 import tmt
 from tmt.steps.prepare import PreparePlugin, PrepareStepData
+from tmt.utils import Path, field
+
+from .cmake import CMake
 
 __all__ = [
     "PrepareCMake",
@@ -18,7 +21,52 @@ __all__ = [
 
 @dataclasses.dataclass
 class PrepareCMakeData(PrepareStepData):
-    pass
+    # TODO: Add better attrs validator and help message
+    # Main configure parameters
+    build_dir: Path = field(
+        option=("-B", "--build-dir"),
+        default=Path("build"),
+        metavar="PATH",
+        help="Path to CMake project",
+    )
+    source_dir: Path = field(
+        option=("-S", "--source-dir"),
+        default=Path("."),
+        metavar="PATH",
+        help="Path to CMake project source",
+    )
+    preset: str | None = field(
+        option=("-p", "--preset"),
+        default=None,
+        metavar="PRESET",
+        help="Configure preset",
+    )
+    defines: dict[str, str] = field(
+        option="-D",
+        default_factory=dict,
+        multiple=True,
+        help="CMake cache variables to configure",
+    )
+    # Control the workflow
+    cmake_exe: Path | None = field(
+        option="--cmake-exe",
+        default=None,
+        metavar="PATH",
+        help="Path to CMake executable. [Default: cmake in PATH]",
+        show_default=False,
+    )
+    no_build: bool = field(
+        option="--no-build",
+        is_flag=True,
+        default=False,
+        help="Do not build or install, only configure",
+    )
+    install_prefix: Path | None = field(
+        option="--install-prefix",
+        default=None,
+        metavar="PATH",
+        help="Install prefix (relative to TMT_PLAN_DATA)",
+    )
 
 
 @tmt.steps.provides_method("cmake")
@@ -64,4 +112,38 @@ class PrepareCMake(PreparePlugin[PrepareCMakeData]):
         logger: tmt.log.Logger,
     ) -> None:
         super().go(guest=guest, environment=environment, logger=logger)
-        # TODO: Implement CMake configure step
+        workdir = self.step.plan.worktree
+        assert workdir is not None
+        plan_data_dir = self.step.plan.data_directory
+        install_prefix = (
+            plan_data_dir / self.data.install_prefix
+            if self.data.install_prefix
+            else None
+        )
+        # Get the CMake wrapper to execute commands
+        cmake = CMake(
+            source_dir=workdir / self.data.source_dir,
+            build_dir=plan_data_dir / self.data.build_dir,
+            cmake_exe=self.data.cmake_exe,
+        )
+
+        guest.execute(
+            command=cmake.configure(
+                preset=self.data.preset,
+                install_prefix=install_prefix,
+                defines=self.data.defines,
+            ),
+            env=environment,
+        )
+        # Double negation, if not no_build -> if build
+        if not self.data.no_build:
+            guest.execute(
+                command=cmake.build(),
+                env=environment,
+            )
+            # Run install only if install_prefix was specified
+            if self.data.install_prefix:
+                guest.execute(
+                    command=cmake.install(),
+                    env=environment,
+                )
