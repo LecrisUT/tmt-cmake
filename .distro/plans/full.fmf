@@ -2,5 +2,7 @@ summary: All tmt tests
 discover+:
   how: fmf
   path: test
+environment:
+  TMT_CMAKE_PROVISION: --how local
 execute:
   how: tmt

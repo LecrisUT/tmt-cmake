@@ -9,8 +9,10 @@ rlJournalStart
 
 	# TODO: How to check for different provisions?
 	rlPhaseStartTest "Run plans"
+		unset provision_args
 		rlRun "work_dir=${TMT_TEST_DATA}/tmt_root" 0 "Set predictable work_dir"
-		rlRun -s "tmt run --id=\$work_dir -avvv plan --name default" 0 "Run plan default"
+		[[ -z "${TMT_CMAKE_PROVISION}" ]] || rlRun "provision_args=\"provision ${TMT_CMAKE_PROVISION}\"" 0 "Set provision_args"
+		rlRun -s "tmt run --id=\$work_dir -avvv \$provision_args plan --name default" 0 "Run plan default"
 		rlAssertGrep "cmd: cmake -S$work_dir/default/tree -B$work_dir/default/data/build" $rlRun_LOG
 		rlAssertGrep "out: -- Configuring done" $rlRun_LOG
 		rlAssertGrep "out: -- Generating done" $rlRun_LOG
