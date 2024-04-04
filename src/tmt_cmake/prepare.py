@@ -41,6 +41,12 @@ class PrepareCMakeData(PrepareStepData):
         metavar="PRESET",
         help="Configure preset",
     )
+    defines: dict[str, str] = field(
+        option="-D",
+        default_factory=dict,
+        multiple=True,
+        help="CMake cache variables to configure",
+    )
     # Control the workflow
     cmake_exe: Path | None = field(
         option="--cmake-exe",
@@ -125,6 +131,7 @@ class PrepareCMake(PreparePlugin[PrepareCMakeData]):
             command=cmake.configure(
                 preset=self.data.preset,
                 install_prefix=install_prefix,
+                defines=self.data.defines,
             ),
             env=environment,
         )

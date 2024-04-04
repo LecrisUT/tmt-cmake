@@ -31,12 +31,14 @@ class CMake:
         self,
         preset: str | None = None,
         install_prefix: Path | None = None,
+        defines: dict[str, str] | None = None,
     ) -> Command:
         """
         CMake configure command.
 
         :param preset: Project's preset to configure
         :param install_prefix: Install prefix
+        :param defines: Dict of CMake cache variables to define
         :return: tmt command to run
         """
         cmake_args = [
@@ -47,6 +49,9 @@ class CMake:
             cmake_args.append(f"--preset={preset}")
         if install_prefix:
             cmake_args.append(f"--install-prefix={install_prefix}")
+        if defines:
+            for var, value in defines.items():
+                cmake_args.append(f"-D{var}={value}")
         return Command(self.cmake_exe, *cmake_args)
 
     def build(self) -> Command:

@@ -33,6 +33,8 @@
         cmake_exe: other-cmake
         no_build: true
         install_prefix: some-install-path
+        defines:
+          some_cache: value
     execute:
       script: /bin/true
   /discover:
