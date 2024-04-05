@@ -21,6 +21,11 @@ __all__ = [
 
 @dataclasses.dataclass
 class PrepareCMakeData(PrepareStepData):
+    @property
+    def is_bare(self) -> bool:
+        # Workaround for https://github.com/teemtee/tmt/issues/2827
+        return False
+
     # TODO: Add better attrs validator and help message
     # Main configure parameters
     build_dir: Path = field(
