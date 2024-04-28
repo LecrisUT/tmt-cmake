@@ -1,0 +1,3 @@
+summary: Unit tests
+tag+: [ unit ]
+test+: " -m unit"

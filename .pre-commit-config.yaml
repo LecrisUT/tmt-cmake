@@ -30,6 +30,7 @@ repos:
         files: ^(src|test)
         additional_dependencies:
           - tmt
+          - pytest
 
   - repo: https://github.com/executablebooks/mdformat
     rev: 0.7.17

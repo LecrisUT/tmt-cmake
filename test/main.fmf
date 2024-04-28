@@ -1,2 +1,5 @@
-test: ./test.sh
-framework: beakerlib
+require:
+  - python3-pytest
+  - python3-pytest-check
+  - python3-flexmock
+test: python3 -m pytest
