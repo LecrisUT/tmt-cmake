@@ -13,19 +13,28 @@ jobs:
   checks:
     name: >
       🐍 ${{ matrix.python-version }}
+      ${{ matrix.tmt-version && format('🌳 {0}', matrix.tmt-version) || '' }}
+      ${{ matrix.experimental && '[🧪 Experimental]' || '' }}
     runs-on: ubuntu-latest
     continue-on-error: ${{ matrix.experimental || false }}
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
+        include:
+          - python-version: "3.x"
+            tmt-version: "main"
+            experimental: true
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install package
         run: pip install -e .[test]
+      - name: Install tmt ${{ matrix.tmt-version }}
+        run: pip install tmt@git+https://github.com/teemtee/tmt@${{ matrix.tmt-version }}
+        if: matrix.tmt-version
       - name: Test package
         run: pytest
         continue-on-error: ${{ matrix.experimental && inputs.mask-experimental}}

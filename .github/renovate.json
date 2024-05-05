@@ -9,6 +9,7 @@
 	"separateMajorMinor": false,
 	"extends": [
 		"config:recommended",
+		":dependencyDashboard",
 		"schedule:weekly",
 		":enablePreCommit",
 		":semanticCommitTypeAll(chore)"
