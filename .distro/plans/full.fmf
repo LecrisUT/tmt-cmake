@@ -4,3 +4,9 @@ discover+:
   path: .
 execute:
   how: tmt
+prepare:
+  how: install
+  package:
+    - python3-pytest
+    - python3-pytest-check
+    - python3-flexmock

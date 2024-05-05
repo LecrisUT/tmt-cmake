@@ -38,3 +38,37 @@ jobs:
       - name: Test package
         run: pytest
         continue-on-error: ${{ matrix.experimental && inputs.mask-experimental}}
+
+  tmt-action:
+    # TODO: Move main tests to use the GH action
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental || false }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - uses: LecrisUT/tmt-actions/setup-tmt@main
+      - uses: LecrisUT/tmt-actions/run-tmt@main
+        with:
+          report-artifact: JUnit-tmt
+
+  report:
+    name: Report JUnit
+    needs: [ tmt-action ]
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download test results
+        uses: actions/download-artifact@v4
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: "*/report.xml"
+          large_files: true
+          report_individual_runs: true
+          report_suite_logs: any
+    if: always()
