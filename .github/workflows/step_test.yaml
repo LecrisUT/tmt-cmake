@@ -5,10 +5,6 @@ on:
         type: boolean
         default: true
         description: Always report experimental test as successful
-    secrets:
-      CODECOV_TOKEN:
-        description: Codecov token of the main repository
-        required: false
 
 permissions:
   contents: read
@@ -29,12 +25,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install package
-        run: pip install -e .[test-cov]
+        run: pip install -e .[test]
       - name: Test package
-        run: pytest --cov --cov-report=xml
+        run: pytest
         continue-on-error: ${{ matrix.experimental && inputs.mask-experimental}}
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          name: python-${{ matrix.python-version }}

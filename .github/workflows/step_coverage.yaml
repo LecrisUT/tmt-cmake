@@ -1,0 +1,28 @@
+name: 👀 coverage
+
+on:
+  workflow_call:
+    secrets:
+      CODECOV_TOKEN:
+        description: Codecov token of the main repository
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+      - name: Install package
+        run: pip install -e .[test-cov]
+      - name: Test package
+        run: pytest --cov --cov-report=xml
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}

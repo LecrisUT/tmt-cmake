@@ -28,8 +28,14 @@ jobs:
     uses: ./.github/workflows/step_test.yaml
     with:
       mask-experimental: ${{ github.event_name == 'push' }}
+
+  coverage:
+    name: 👀 coverage
+    needs: [ tests ]
+    uses: ./.github/workflows/step_coverage.yaml
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    if: github.event_name != 'schedule'
 
   docs:
     name: 📘 docs
@@ -42,7 +48,7 @@ jobs:
 
   pass:
     name: Pass
-    needs: [ pre-commit, tests, build-wheel ]
+    needs: [ pre-commit, tests, coverage, build-wheel ]
     runs-on: ubuntu-latest
     steps:
       - uses: re-actors/alls-green@release/v1
