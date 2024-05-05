@@ -37,6 +37,8 @@ dependencies = [
 [project.optional-dependencies]
 test = [
     "pytest",
+    "pytest-check",
+    "flexmock",
 ]
 test-cov = [
     "tmt-cmake[test]",
@@ -64,6 +66,15 @@ Homepage = "https://github.com/LecrisUT/tmt-cmake"
 Repository = "https://github.com/LecrisUT/tmt-cmake"
 Documentation = "https://tmt-cmake.readthedocs.io"
 Issues = "https://github.com/LecrisUT/tmt-cmake/issues"
+
+[tool.pytest.ini_options]
+addopts = ["-ra", "--strict-markers", "--strict-config"]
+markers = [
+    "unit: Unit tests",
+    "smoke: Basic smoke tests",
+    "integration: Integration tests",
+    "functional: Functional tests",
+]
 
 [tool.hatch]
 version.source = "vcs"

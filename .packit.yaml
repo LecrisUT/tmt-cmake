@@ -1,29 +1,16 @@
-packages:
-  python-tmt-cmake:
-    upstream_package_name: tmt-cmake
-    # Need to define these
-    # https://github.com/packit/packit/issues/2272
-    downstream_package_name: python-tmt-cmake
-    specfile_path: .distro/python-tmt-cmake.spec
-    files_to_sync:
-      - src: .distro/python-tmt-cmake.spec
-        dest: python-tmt-cmake.spec
-      - .packit.yaml
-      - src: .distro/python-tmt-cmake.rpmlintrc
-        dest: python-tmt-cmake.rpmlintrc
-      # tmt setup
-      - src: .distro/.fmf/
-        dest: .fmf/
-      - src: .distro/plans/
-        dest: plans/
-        filters:
-          - "- main.fmf.dist-git"
-          - "- rpminspect.fmf"
-          - "- rpmlint.fmf"
-      - src: .distro/tests/
-        dest: tests/
-      - src: .distro/plans/main.fmf.dist-git
-        dest: plans/main.fmf
+files_to_sync:
+  - src: .distro/
+    dest: ./
+    delete: true
+    filters:
+      - "protect .git*"
+      - "protect sources"
+      - "- plans/rpminspect.fmf"
+      - "- plans/rpmlint.fmf"
+
+upstream_package_name: tmt-cmake
+downstream_package_name: python-tmt-cmake
+specfile_path: .distro/python-tmt-cmake.spec
 
 update_release: false
 upstream_tag_template: v{version}
@@ -34,15 +21,13 @@ jobs:
     trigger: release
     owner: lecris
     project: release
-    targets:
+    targets: &targets
       - fedora-all-x86_64
       - fedora-all-aarch64
   - &tests
     job: tests
     trigger: release
-    targets:
-      - fedora-all-x86_64
-      - fedora-all-aarch64
+    targets: *targets
     fmf_path: .distro
   - <<: *copr
     trigger: commit

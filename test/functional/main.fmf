@@ -1,0 +1,4 @@
+summary: Functional tests
+tag+: [ functional ]
+test+: " -m functional"
+enabled: false

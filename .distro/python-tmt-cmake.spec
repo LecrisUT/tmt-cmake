@@ -40,7 +40,7 @@ Requires:       cmake
 
 
 %check
-%pytest
+%pytest -m "smoke or unit"
 
 
 %files -n python3-tmt-cmake -f %{pyproject_files}

@@ -1,0 +1,6 @@
+adjust:
+  when: initiator == fedora-ci
+  discover:
+    how: fmf
+    dist-git-source: true
+    dist-git-extract: tmt_cmake-*/
