@@ -1,0 +1,12 @@
+/:
+  inherit: false
+
+/full:
+  summary: All tmt tests
+  discover:
+    how: fmf
+  execute:
+    how: tmt
+  prepare:
+    how: shell
+    script: pip install -e .[test]

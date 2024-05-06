@@ -28,6 +28,11 @@ jobs:
     uses: ./.github/workflows/step_test.yaml
     with:
       mask-experimental: ${{ github.event_name == 'push' }}
+    permissions:
+      contents: read
+      # For junit-report
+      checks: write
+      pull-requests: write
 
   coverage:
     name: 👀 coverage
