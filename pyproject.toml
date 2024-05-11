@@ -38,7 +38,7 @@ dependencies = [
 test = [
     "pytest",
     "pytest-check",
-    "flexmock",
+    "pytest-subprocess",
 ]
 test-cov = [
     "tmt-cmake[test]",
