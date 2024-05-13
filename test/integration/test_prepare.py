@@ -33,6 +33,9 @@ def test_default(
     fp.allow_unregistered(allow=True)
     result = tmt_cli(args)
     check.equal(result.exit_code, 0)
+    check.is_false(result.exception)
+    for exc in result.exc_info:
+        check.is_false(exc)
     check.is_true(re.search(r"cmd: cmake -S.* -B.*", result.stdout))
     check.is_in("out: -- Configuring done", result.stdout)
     check.is_in("out: -- Generating done", result.stdout)
