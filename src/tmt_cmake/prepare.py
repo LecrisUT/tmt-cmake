@@ -7,12 +7,16 @@ This module provides the `prepare.how=cmake` plugin.
 from __future__ import annotations
 
 import dataclasses
+from typing import TYPE_CHECKING
 
 import tmt
 from tmt.steps.prepare import PreparePlugin, PrepareStepData
 from tmt.utils import Path, field
 
 from .cmake import CMake
+
+if TYPE_CHECKING:
+    from .discover import DiscoverCMake
 
 __all__ = [
     "PrepareCMake",
@@ -83,6 +87,7 @@ class PrepareCMake(PreparePlugin[PrepareCMakeData]):
     """
 
     _data_class = PrepareCMakeData
+    discover: DiscoverCMake | None = None
 
     def _check(self) -> bool:
         """Check that the prepare step is well configured."""

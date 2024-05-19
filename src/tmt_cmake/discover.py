@@ -7,6 +7,7 @@ This module provides the `discover.how=cmake` plugin.
 from __future__ import annotations
 
 import dataclasses
+from typing import TYPE_CHECKING
 
 import tmt
 import tmt.utils
@@ -14,6 +15,9 @@ from tmt.steps.discover import DiscoverPlugin, DiscoverStepData
 from tmt.utils import field
 
 import tmt_cmake.prepare
+
+if TYPE_CHECKING:
+    from .prepare import PrepareCMake
 
 __all__ = [
     "DiscoverCMake",
@@ -63,6 +67,7 @@ class DiscoverCMake(DiscoverPlugin[DiscoverCMakeData]):
     """
 
     _data_class = DiscoverCMakeData
+    prepare: PrepareCMake | None = None
 
     def _check(self) -> bool:
         """Check that the discover step is well configured."""
@@ -99,3 +104,10 @@ class DiscoverCMake(DiscoverPlugin[DiscoverCMakeData]):
 
     def go(self) -> None:  # noqa: D102
         super().go()
+        # Tests will be created after prepare step
+        self.step.plan.discover.extract_tests_later = True
+        self.info("Tests will be discovered after prepare.cmake step is done")
+        prepare_plugins = self.step.plan.prepare.phases(tmt_cmake.prepare.PrepareCMake)
+        assert len(prepare_plugins) == 1
+        self.prepare = prepare_plugins[0]
+        self.prepare.discover = self
