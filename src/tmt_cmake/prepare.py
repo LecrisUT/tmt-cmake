@@ -157,3 +157,5 @@ class PrepareCMake(PreparePlugin[PrepareCMakeData]):
                     command=cmake.install(),
                     env=environment,
                 )
+        if self.discover is not None and not self.discover.data.run_ctest_once:
+            self.discover.do_discover(cmake, guest, environment)

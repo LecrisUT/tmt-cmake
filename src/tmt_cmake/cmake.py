@@ -12,6 +12,12 @@ def _convert_cmake_exe(val: Path | None) -> Path | str:
     return val if val else "cmake"
 
 
+def _convert_ctest_exe(val: Path | None) -> Path | str:
+    # No converter decorator yet
+    # https://github.com/python-attrs/attrs/pull/404
+    return val if val else "ctest"
+
+
 @attrs.define
 class CMake:
     """
@@ -24,8 +30,10 @@ class CMake:
     """Project's source path"""
     build_dir: Path
     """Project's build path"""
-    cmake_exe: Path | str = attrs.field(converter=_convert_cmake_exe)
+    cmake_exe: Path | str = attrs.field(default=None, converter=_convert_cmake_exe)
     """CMake executable to use [default search from ``PATH``]"""
+    ctest_exe: Path | str = attrs.field(default=None, converter=_convert_ctest_exe)
+    """CTest executable to use [default search from ``PATH``]"""
 
     def configure(
         self,
@@ -77,3 +85,16 @@ class CMake:
             str(self.build_dir),
         ]
         return Command(self.cmake_exe, *cmake_args)
+
+    def test(self, *args: str) -> Command:
+        """
+        CTest command.
+
+        :return: tmt command to run
+        """
+        cmake_args = [
+            "--test-dir",
+            str(self.build_dir),
+            *args,
+        ]
+        return Command(self.ctest_exe, *cmake_args)

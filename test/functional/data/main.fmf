@@ -1,0 +1,8 @@
+summary: Minimal example
+prepare:
+  how: cmake
+discover:
+  how: cmake
+  run_ctest_once: false
+execute:
+  how: tmt
