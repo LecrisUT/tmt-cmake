@@ -17,13 +17,14 @@ from tmt.utils import field
 
 import tmt_cmake.prepare
 
+from .cmake import CMake, CTestTest
+
 if TYPE_CHECKING:
     from tmt.steps import Step
     from tmt.steps.provision import Guest
-    from tmt.utils import Environment
+    from tmt.utils import Environment, Path
 
-    from .cmake import CMake
-    from .prepare import PrepareCMake
+    from .prepare import PrepareCMake, PrepareCMakeData
 
 __all__ = [
     "DiscoverCMake",
@@ -73,6 +74,13 @@ class DiscoverCMakeData(DiscoverStepData):
         is_flag=True,
         help="Run all ctest tests together",
     )
+    ctest_exe: Path | None = field(
+        option="--ctest-exe",
+        default=None,
+        metavar="PATH",
+        help="Path to CTest executable. [Default: ctest in PATH]",
+        show_default=False,
+    )
 
 
 @tmt.steps.provides_method("cmake")
@@ -86,6 +94,7 @@ class DiscoverCMake(DiscoverPlugin[DiscoverCMakeData]):
     _data_class = DiscoverCMakeData
     prepare: PrepareCMake | None = None
     _tests: list[tmt.Test]
+    _cmake: CMake | None = None
 
     def __init__(  # noqa: D107
         self,
@@ -102,16 +111,54 @@ class DiscoverCMake(DiscoverPlugin[DiscoverCMakeData]):
         """Check that the discover step is well configured."""
         successful = True
         # Check that there is a prepare CMake step
+        if not self._get_prepare_data():
+            self.fail("No CMake prepare step found")
+            successful = False
+        return successful
+
+    def _get_prepare_data(self) -> PrepareCMakeData | None:
+        """Get the corresponding CMake prepare data."""
+        # If the prepare was already registered, use that
+        if self.prepare:
+            return self.prepare.data
         # TODO: tmt does not have a cleaner way to check the plugin type
         cmake_data = [
             data
             for data in self.step.plan.prepare.data
             if isinstance(data, tmt_cmake.prepare.PrepareCMakeData)
         ]
+        # Return None as invalid if there is no CMake prepare data
         if not cmake_data:
-            self.fail("No CMake prepare step found")
-            successful = False
-        return successful
+            return None
+        # Otherwise get the actual data
+        # If there is more than 1 CMake prepare, this is caught by the prepare step
+        return cmake_data[0]
+
+    @property
+    def cmake(self) -> CMake:
+        """Cached CMake wrapper."""
+        if self._cmake is None:
+            prepare_data = self._get_prepare_data()
+            assert prepare_data is not None
+            self._cmake = CMake.from_prepare_data(
+                prepare_data,
+                self,
+                ctest_exe=self.data.ctest_exe,
+            )
+        return self._cmake
+
+    def _filter_args(self) -> list[str]:
+        """Construct the filter arguments from discovery data."""
+        args = []
+        if self.data.tests_include:
+            args += ["-R", self.data.tests_include]
+        if self.data.tests_exclude:
+            args += ["-E", self.data.tests_exclude]
+        if self.data.labels_include:
+            args += ["-L", self.data.labels_include]
+        if self.data.labels_exclude:
+            args += ["-LE", self.data.labels_exclude]
+        return args
 
     def show(self, keys: list[str] | None = None) -> None:  # noqa: D102
         super().show(keys)
@@ -139,36 +186,28 @@ class DiscoverCMake(DiscoverPlugin[DiscoverCMakeData]):
 
     def do_discover(
         self,
-        cmake: CMake,
         guest: Guest,
         environment: Environment | None,
     ) -> None:
         """Do the actual discover."""
-        filter_args = []
-        if self.data.tests_include:
-            filter_args += ["-R", self.data.tests_include]
-        if self.data.tests_exclude:
-            filter_args += ["-E", self.data.tests_exclude]
-        if self.data.labels_include:
-            filter_args += ["-L", self.data.labels_include]
-        if self.data.labels_exclude:
-            filter_args += ["-LE", self.data.labels_exclude]
         output = guest.execute(
-            cmake.test("--show-only=json-v1", *filter_args),
+            self.cmake.test("--show-only=json-v1", *self._filter_args()),
             env=environment,
         )
         assert output.stdout
         ctest_json = json.loads(output.stdout)
         for ctest_test in ctest_json["tests"]:
             name = ctest_test["name"]
-            tmt_test = tmt.Test.from_dict(
+            tmt_test = CTestTest.from_dict(
                 name=f"{self.data.test_prefix}/{name}",
                 mapping={
                     "framework": "cmake",
-                    "extra-ctest_name": name,
-                    "test": "dummy",
+                    # dummy test value will be populated by framework's get_test_command
+                    "test": "",
+                    "ctest_args": ["-R", rf"^{name}$"],
                 },
                 logger=self._logger.descend(name),
+                discover=self,
             )
             # Update the tests. Currently using the hack in DiscoverFmf.post_dist_git
             self.step.plan.discover._tests[self.name].append(tmt_test)  # noqa: SLF001
@@ -181,25 +220,25 @@ class DiscoverCMake(DiscoverPlugin[DiscoverCMakeData]):
         name = self.data.test_prefix
         tmt_test_data = {
             "framework": "cmake",
-            "test": "dummy",
+            # dummy test value will be populated by framework's get_test_command
+            "test": "",
+            "ctest_args": self._filter_args(),
         }
-        if self.data.tests_include:
-            tmt_test_data["extra-tests_include"] = self.data.tests_include
-        if self.data.tests_exclude:
-            tmt_test_data["extra-tests_exclude"] = self.data.tests_exclude
-        if self.data.labels_include:
-            tmt_test_data["extra-labels_include"] = self.data.labels_include
-        if self.data.labels_exclude:
-            tmt_test_data["extra-labels_exclude"] = self.data.labels_exclude
-        tmt_test = tmt.Test.from_dict(
+        tmt_test = CTestTest.from_dict(
             name=name,
             mapping=tmt_test_data,
             logger=self._logger.descend(name),
+            discover=self,
         )
         self._tests.append(tmt_test)
 
     def go(self) -> None:  # noqa: D102
         super().go()
+        # Save the prepare step for easier referencing
+        prepare_plugins = self.step.plan.prepare.phases(tmt_cmake.prepare.PrepareCMake)
+        assert len(prepare_plugins) == 1
+        self.prepare = prepare_plugins[0]
+        # Get the tests
         if self.data.run_ctest_once:
             # If we run all tests together register a single tmt test
             self.register_single_test()
@@ -207,7 +246,4 @@ class DiscoverCMake(DiscoverPlugin[DiscoverCMakeData]):
         # Otherwise, tests will be created after prepare step
         self.step.plan.discover.extract_tests_later = True
         self.info("Tests will be discovered after prepare.cmake step is done")
-        prepare_plugins = self.step.plan.prepare.phases(tmt_cmake.prepare.PrepareCMake)
-        assert len(prepare_plugins) == 1
-        self.prepare = prepare_plugins[0]
         self.prepare.discover = self

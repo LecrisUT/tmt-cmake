@@ -1,0 +1,90 @@
+$id: /schemas/ctesttest
+$schema: https://json-schema.org/draft-07/schema
+
+type: object
+additionalProperties: false
+
+properties:
+  # Copy fields from test
+  adjust:
+    $ref: "/schemas/core#/definitions/adjust"
+  component:
+    $ref: "/schemas/common#/definitions/one_or_more_strings"
+  contact:
+    $ref: "/schemas/core#/definitions/contact"
+  description:
+    $ref: "/schemas/core#/definitions/description"
+  duration:
+    $ref: "/schemas/common#/definitions/duration"
+  enabled:
+    $ref: "/schemas/core#/definitions/enabled"
+  environment:
+    $ref: "/schemas/common#/definitions/environment"
+  check:
+    anyOf:
+      - type: string
+      - $ref: "/schemas/common#/definitions/check"
+      - type: array
+        items:
+          anyOf:
+            - type: string
+            - $ref: "/schemas/common#/definitions/check"
+  id:
+    $ref: "/schemas/core#/definitions/id"
+  link:
+    $ref: "/schemas/core#/definitions/link"
+  manual:
+    type: boolean
+  tty:
+    type: boolean
+  order:
+    $ref: "/schemas/core#/definitions/order"
+  path:
+    type: string
+    pattern: "^/"
+  recommend:
+    $ref: "/schemas/common#/definitions/one_or_more_strings"
+  require:
+    anyOf:
+      - type: string
+      - $ref: "/schemas/common#/definitions/beakerlib_library"
+      - $ref: "/schemas/common#/definitions/require_file"
+      - type: array
+        items:
+          anyOf:
+            - type: string
+            - $ref: "/schemas/common#/definitions/beakerlib_library"
+            - $ref: "/schemas/common#/definitions/require_file"
+  restart-on-exit-code:
+    anyOf:
+      - type: integer
+      - type: array
+        items:
+          type: integer
+  restart-max-count:
+    type: integer
+  restart-with-reboot:
+    type: boolean
+  result:
+    $ref: "/schemas/common#/definitions/result_interpret"
+  summary:
+    $ref: "/schemas/core#/definitions/summary"
+  tag:
+    $ref: "/schemas/core#/definitions/tag"
+  test:
+    type: string
+  tier:
+    $ref: "/schemas/core#/definitions/tier"
+
+  # CTest specific
+  framework:
+    type: string
+    enum:
+      - cmake
+  ctest_args:
+    type: array
+    items:
+      type: string
+
+required:
+  - framework

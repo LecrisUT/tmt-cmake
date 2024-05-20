@@ -2,8 +2,22 @@
 
 from __future__ import annotations
 
+import dataclasses
+from typing import TYPE_CHECKING
+
 import attrs
-from tmt.utils import Command, Path
+from tmt import Test
+from tmt.utils import Command, Path, field
+
+if TYPE_CHECKING:
+    from typing import Any
+
+    import fmf
+    import tmt
+    from tmt.steps import BasePlugin, StepDataT
+
+    from .discover import DiscoverCMake
+    from .prepare import PrepareCMakeData
 
 
 def _convert_cmake_exe(val: Path | None) -> Path | str:
@@ -30,10 +44,35 @@ class CMake:
     """Project's source path"""
     build_dir: Path
     """Project's build path"""
-    cmake_exe: Path | str = attrs.field(default=None, converter=_convert_cmake_exe)
+    cmake_exe: Path | str = attrs.field(converter=_convert_cmake_exe)
     """CMake executable to use [default search from ``PATH``]"""
-    ctest_exe: Path | str = attrs.field(default=None, converter=_convert_ctest_exe)
+    ctest_exe: Path | str = attrs.field(converter=_convert_ctest_exe)
     """CTest executable to use [default search from ``PATH``]"""
+
+    @classmethod
+    def from_prepare_data(
+        cls,
+        data: PrepareCMakeData,
+        plugin: BasePlugin[StepDataT],
+        ctest_exe: Path | None = None,
+    ) -> CMake:
+        """
+        Construct CMake wrapper from Prepare plugin data.
+
+        :param data: Prepare plugin data
+        :param plugin: Base plugin (can be from any step)
+        :param ctest_exe: Path to ctest defined in discover stage
+        :return: CMake wrapper
+        """
+        workdir = plugin.step.plan.worktree
+        assert workdir is not None
+        plan_data_dir = plugin.step.plan.data_directory
+        return CMake(
+            source_dir=workdir / data.source_dir,
+            build_dir=plan_data_dir / data.build_dir,
+            cmake_exe=data.cmake_exe,
+            ctest_exe=ctest_exe,
+        )
 
     def configure(
         self,
@@ -98,3 +137,38 @@ class CMake:
             *args,
         ]
         return Command(self.ctest_exe, *cmake_args)
+
+
+@dataclasses.dataclass
+class CTestTest(Test):
+    """CTest specific test type."""
+
+    # _discover is prefixed with _ so that it doesn't get used for saving the data
+    _discover: DiscoverCMake | None = None
+    """Discover phase that consturcted the test"""
+    ctest_args: list[str] = field(
+        default_factory=list,
+    )
+    """CTest arguments to execute"""
+
+    def __init__(  # noqa: D107, PLR0913
+        self,
+        *,
+        node: fmf.Tree,
+        tree: tmt.Tree | None = None,
+        skip_validation: bool = False,
+        raise_on_validation_error: bool = False,
+        logger: tmt.log.Logger,
+        discover: DiscoverCMake,
+        **kwargs: Any,  # noqa: ANN401
+    ) -> None:
+        super().__init__(
+            node=node,
+            tree=tree,
+            skip_validation=skip_validation,
+            raise_on_validation_error=raise_on_validation_error,
+            logger=logger,
+            **kwargs,
+        )
+        self._discover = discover
+        self.ctest_args = node["ctest_args"]

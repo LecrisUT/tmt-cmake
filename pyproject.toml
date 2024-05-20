@@ -61,6 +61,9 @@ PrepareCMake = "tmt_cmake.prepare:PrepareCMake"
 DiscoverCMake = "tmt_cmake.discover:DiscoverCMake"
 FrameworkCMake = "tmt_cmake.framework:CMake"
 
+[project.entry-points."tmt.resources"]
+ResourcesCMake = "tmt_cmake"
+
 [project.urls]
 Homepage = "https://github.com/LecrisUT/tmt-cmake"
 Repository = "https://github.com/LecrisUT/tmt-cmake"
