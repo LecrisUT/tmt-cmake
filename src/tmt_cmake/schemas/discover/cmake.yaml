@@ -1,0 +1,41 @@
+$id: /schemas/discover/cmake
+$schema: https://json-schema.org/draft-07/schema
+
+type: object
+additionalProperties: false
+
+properties:
+  # Main check that it is a CMake prepare
+  how:
+    type: string
+    enum:
+      - cmake
+
+  # CMake prepare keys
+  tests_include:
+    type: string
+  tests_exclude:
+    type: string
+  labels_include:
+    type: string
+  labels_exclude:
+    type: string
+  test_prefix:
+    type: string
+  cmake_exe:
+    type: string
+  run_ctest_once:
+    type: boolean
+
+  # Common discover keys
+  name:
+    type: string
+  summary:
+    $ref: "/schemas/core#/definitions/summary"
+  order:
+    $ref: "/schemas/core#/definitions/order"
+  where:
+    $ref: "/schemas/common#/definitions/where"
+
+required:
+  - how

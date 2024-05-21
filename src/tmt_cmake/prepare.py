@@ -7,12 +7,16 @@ This module provides the `prepare.how=cmake` plugin.
 from __future__ import annotations
 
 import dataclasses
+from typing import TYPE_CHECKING
 
 import tmt
 from tmt.steps.prepare import PreparePlugin, PrepareStepData
 from tmt.utils import Path, field
 
 from .cmake import CMake
+
+if TYPE_CHECKING:
+    from .discover import DiscoverCMake
 
 __all__ = [
     "PrepareCMake",
@@ -21,6 +25,11 @@ __all__ = [
 
 @dataclasses.dataclass
 class PrepareCMakeData(PrepareStepData):
+    @property
+    def is_bare(self) -> bool:
+        # Workaround for https://github.com/teemtee/tmt/issues/2827
+        return False
+
     # TODO: Add better attrs validator and help message
     # Main configure parameters
     build_dir: Path = field(
@@ -78,6 +87,7 @@ class PrepareCMake(PreparePlugin[PrepareCMakeData]):
     """
 
     _data_class = PrepareCMakeData
+    discover: DiscoverCMake | None = None
 
     def _check(self) -> bool:
         """Check that the prepare step is well configured."""
@@ -112,8 +122,6 @@ class PrepareCMake(PreparePlugin[PrepareCMakeData]):
         logger: tmt.log.Logger,
     ) -> None:
         super().go(guest=guest, environment=environment, logger=logger)
-        workdir = self.step.plan.worktree
-        assert workdir is not None
         plan_data_dir = self.step.plan.data_directory
         install_prefix = (
             plan_data_dir / self.data.install_prefix
@@ -121,11 +129,7 @@ class PrepareCMake(PreparePlugin[PrepareCMakeData]):
             else None
         )
         # Get the CMake wrapper to execute commands
-        cmake = CMake(
-            source_dir=workdir / self.data.source_dir,
-            build_dir=plan_data_dir / self.data.build_dir,
-            cmake_exe=self.data.cmake_exe,
-        )
+        cmake = CMake.from_prepare_data(self.data, self)
 
         guest.execute(
             command=cmake.configure(
@@ -147,3 +151,5 @@ class PrepareCMake(PreparePlugin[PrepareCMakeData]):
                     command=cmake.install(),
                     env=environment,
                 )
+        if self.discover is not None and not self.discover.data.run_ctest_once:
+            self.discover.do_discover(guest, environment)
