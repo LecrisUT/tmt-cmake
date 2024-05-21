@@ -1,0 +1,43 @@
+$id: /schemas/prepare/cmake
+$schema: https://json-schema.org/draft-07/schema
+
+type: object
+additionalProperties: false
+
+properties:
+  # Main check that it is a CMake prepare
+  how:
+    type: string
+    enum:
+      - cmake
+
+  # CMake prepare keys
+  source_dir:
+    type: string
+  build_dir:
+    type: string
+  preset:
+    type: string
+  defines:
+    type: object
+    additionalProperties:
+      type: string
+  cmake_exe:
+    type: string
+  no_build:
+    type: boolean
+  install_prefix:
+    type: string
+
+  # Common prepare keys
+  name:
+    type: string
+  summary:
+    $ref: "/schemas/core#/definitions/summary"
+  order:
+    $ref: "/schemas/core#/definitions/order"
+  where:
+    $ref: "/schemas/common#/definitions/where"
+
+required:
+  - how
