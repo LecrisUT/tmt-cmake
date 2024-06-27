@@ -5,6 +5,10 @@ on:
         type: boolean
         default: true
         description: Always report experimental test as successful
+    secrets:
+      TESTING_FARM_API_TOKEN:
+        required: false
+        description: API token for testing farm
 
 permissions:
   contents: read
@@ -38,6 +42,25 @@ jobs:
       - name: Test package
         run: pytest
         continue-on-error: ${{ matrix.experimental && inputs.mask-experimental}}
+
+  testing-farm:
+    runs-on: ubuntu-latest
+    env:
+      TESTING_FARM_API_TOKEN: ${{ secrets.TESTING_FARM_API_TOKEN }}
+    permissions:
+      contents: read
+      statuses: write
+      pull-requests: write
+    steps:
+      - uses: sclorg/testing-farm-as-github-action@v2
+        with:
+          api_key: ${{ secrets.TESTING_FARM_API_TOKEN }}
+          git_url: ${{ github.server_url }}/${{ github.repository }}
+          git_ref: ${{ github.ref }}
+          create_issue_comment: true
+          update_pull_request_status: true
+        # Cannot use secrets in the if conditional, using env variable instead
+        if: ${{ env.TESTING_FARM_API_TOKEN != '' }}
 
   tmt-action:
     # TODO: Move main tests to use the GH action

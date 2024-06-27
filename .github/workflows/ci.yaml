@@ -28,11 +28,16 @@ jobs:
     uses: ./.github/workflows/step_test.yaml
     with:
       mask-experimental: ${{ github.event_name == 'push' }}
+    secrets:
+      TESTING_FARM_API_TOKEN: ${{ secrets.TESTING_FARM_API_TOKEN }}
     permissions:
       contents: read
       # For junit-report
       checks: write
       pull-requests: write
+      # For testing-farm
+#      pull-requests: write
+      statuses: write
 
   coverage:
     name: 👀 coverage
